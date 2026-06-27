@@ -1,0 +1,139 @@
+[
+  {
+    "id": "1",
+    "title": "Smart Wi-Fi Intruder Detection System",
+    "subtitle": "Defensive Packet Monitor & Active Shield",
+    "problemStatement": "Residential and small business Wi-Fi routers frequently suffer from unauthorized connections, unmapped IoT nodes, and vulnerability to ARP Spoofing/Man-in-the-Middle attacks. Existing intrusion detection software is often bulky, expensive, and difficult for average users to inspect. This project was built to provide a lightweight, automated, and visual packet monitor that detects unknown devices, profiles their security risk using heuristic algorithms, and immediately pushes defensive firewall blocks.",
+    "devTimeline": "6 weeks",
+    "githubUrl": "https://github.com/RohitSharma9258/wifi-intruder-detector",
+    "demoUrl": "https://github.com/RohitSharma9258/wifi-intruder-detector",
+    "techStack": [
+      { "name": "Python", "role": "Core Engine & Automation Scripting" },
+      { "name": "Scapy", "role": "Low-level Packet Sniffing & ARP Broadcasting" },
+      { "name": "Flask", "role": "Micro-web Host for Dashboard API" },
+      { "name": "SQLite", "role": "Device Registry & Threat Log database" }
+    ],
+    "features": [
+      "Low-overhead packet filtering sniffing on active adapters.",
+      "Asynchronous ARP broadcast mapping for complete MAC directory tracking.",
+      "Threat rating calculations evaluating packet volume and manufacturer signatures.",
+      "Automatic iptables firewall rule writing to drop target intruder MAC addresses.",
+      "Real-time client Dashboard displaying bandwidth telemetry.",
+      "Mock penetration-test logging reports."
+    ],
+    "architecture": {
+      "diagram": "┌─────────────────┐       ┌────────────────┐       ┌───────────────┐\n│  Active Adapter  │ ────> │  Scapy Sniffer │ ────> │ Heuristics Eng│\n└─────────────────┘       └────────────────┘       └───────────────┘\n                                                           │\n                                                           v\n┌─────────────────┐       ┌────────────────┐       ┌───────────────┐\n│  iptables Rules │ <──── │ SQLite Log DB  │ <──── │ Flask REST API│\n└─────────────────┘       └────────────────┘       └───────────────┘",
+      "summary": "Real-time network traffic is intercepted by Scapy sniffer threads. The heuristics module parses vendor signatures and query volumes to trigger SQLite logging. The database record updates act as triggers for automated iptables injection to block offending MAC addresses."
+    },
+    "technicalDecisions": [
+      "Chose Python as the core implementation language to leverage Scapy's high-level packet manipulation features and Flask's lightweight REST structure.",
+      "Utilized Python threading instead of multiprocessing to maintain a low memory footprint (under 30MB) suitable for deployment on small IoT/embedded router boards.",
+      "Adopted SQLite for local state storage, removing heavy external database dependencies and facilitating simple atomic database transactions."
+    ],
+    "securityConsiderations": [
+      "Input Sanitization: All MAC address strings and client identifiers are validated against strict regex patterns before insertion into shell execution blocks to prevent command injection.",
+      "Database Hardening: Used parameterized SQL queries for all DB access paths, mitigating potential SQL injection vectors from spoofed network identifiers.",
+      "Privilege Isolation: Restricted execution of firewall manipulation scripts to a specific sudoers rule, preventing the web server process from possessing full superuser rights."
+    ],
+    "tradeoffs": [
+      "SQLite vs PostgreSQL: Chose SQLite for zero-configuration local deployments, trading off high concurrency write support for extreme simplicity and low overhead.",
+      "Active Blocking vs Passive Alerting: Active blocking (iptables injection) provides real-time protection but risks locking out legitimate nodes if threat scoring yields a false positive."
+    ],
+    "testingStrategy": [
+      "Unit Testing: Validated threat rating calculation helper logic with varying packet counts and manufacturer data.",
+      "Simulation Testing: Conducted test runs on a local isolated subnet with fake spoofed ARP query generation to confirm detection rates.",
+      "Security Auditing: Verified that invalid MAC string formats are rejected and do not trigger command execution errors."
+    ],
+    "performanceOptimizations": [
+      "Implemented a batch log buffer that queues alerts and flushes writes to SQLite every 2 seconds, reducing IO wait times.",
+      "Optimized Scapy sniffing loop with Berkeley Packet Filters (BPF) to ignore unneeded local network protocols, saving up to 45% CPU cycles."
+    ],
+    "lessonsLearned": [
+      "Asynchronous packet capture requires highly optimized queue structures; blocking socket operations inside the main server thread can result in significant packet drops."
+    ],
+    "futureImprovements": [
+      "Implement deep learning classifiers (Scikit-Learn) to recognize patterns of Denial of Service (DoS) attempts.",
+      "Add email notifications for instant intrusion warnings.",
+      "Compile into an embedded Raspberry Pi module."
+    ],
+    "challenges": [
+      {
+        "title": "Asynchronous Sniff Thread Collisions",
+        "description": "Scapy's blocking packet-sniffing engine would regularly freeze the main Flask Web Server execution context, preventing updates to the visual dashboard.",
+        "solution": "Decoupled packet capturing into a separate daemonized Python thread, sharing state with the SQLite database utilizing connection pools to prevent read-write locks."
+      },
+      {
+        "title": "MAC Spoofing False Neutrals",
+        "description": "Intruder devices spoofing legitimate vendor MAC addresses bypassed simple catalog scans.",
+        "solution": "Introduced dynamic fingerprint analysis that audits device handshake response times and active connection ports, alerting users of mismatched behavior profiles."
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "title": "Vanguard Port Scanner",
+    "subtitle": "Asynchronous High-Throughput Network Auditor",
+    "problemStatement": "Standard network port scanners operate on synchronous connection requests, meaning scanning an entire CIDR network block (e.g., /24 with 256 IPs) could take hours. This bottleneck delays security audits and exposes servers to longer windows of vulnerability. The Vanguard Port Scanner mitigates this by using Python's asyncio model to poll thousands of TCP sockets concurrently, shrinking audit schedules from hours to seconds.",
+    "devTimeline": "4 weeks",
+    "githubUrl": "https://github.com/RohitSharma9258/vanguard-port-scanner",
+    "demoUrl": "https://github.com/RohitSharma9258/vanguard-port-scanner",
+    "techStack": [
+      { "name": "Python", "role": "Async Core Engine" },
+      { "name": "Asyncio", "role": "Concurrently manages non-blocking socket connections" },
+      { "name": "REST API", "role": "Enables remote query bindings for security audits" },
+      { "name": "SQLite", "role": "Logs history records of scanned ports and services" }
+    ],
+    "features": [
+      "Ultra-fast asynchronous TCP handshake scan cycles.",
+      "Flexible CIDR block resolution (e.g., 192.168.1.0/24) and target lists.",
+      "Active banner grabbing to resolve running software versions.",
+      "JSON formatted REST API endpoints to feed external web dashboards.",
+      "Historical scan database logs with CSV/JSON export templates."
+    ],
+    "architecture": {
+      "diagram": "┌──────────────────┐       ┌─────────────────┐       ┌───────────────┐\n│ Target CIDR/Host │ ────> │ Asyncio Worker  │ ────> │ TCP Socket    │\n└──────────────────┘       └─────────────────┘       └───────────────┘\n                                                             │\n                                                             v\n┌──────────────────┐       ┌─────────────────┐       ┌───────────────┐\n│ JSON / CSV Export│ <──── │ SQLite Database │ <──── │ Banner Grab   │\n└──────────────────┘       └─────────────────┘       └───────────────┘",
+      "summary": "The scanner resolves the CIDR range to a list of target host IPs. The asyncio connection worker pool triggers parallel non-blocking socket connect sweeps. For open connections, a banner grab module requests system headers, archiving results directly to SQLite."
+    },
+    "technicalDecisions": [
+      "Selected Python's asyncio module over threading or multiprocessing because socket I/O is primarily network-bound, allowing a single event loop thread to manage thousands of parallel TCP requests.",
+      "Used standard socket libraries rather than invoking binary tools (like Nmap) to keep the utility dependency-free and cross-platform compatible.",
+      "Designed a clean modular command-line parser alongside an optional local REST API wrapper to support automated continuous security audits."
+    ],
+    "securityConsiderations": [
+      "Target Verification: Incorporated safety checks that block scans against critical infrastructure or public IP ranges unless explicitly authorized in settings configurations.",
+      "Sanitizing Target Inputs: Structured the address parser to strictly reject non-standard domain strings or local shell characters, averting command injections."
+    ],
+    "tradeoffs": [
+      "TCP Connect Scans vs SYN Stealth Scans: Implemented full TCP handshake scans to avoid needing root/administrator permissions to construct raw frames, accepting the trade-off that handshake scans are noisier and visible on target host logs."
+    ],
+    "testingStrategy": [
+      "Unit testing of target IP and CIDR expansion logic to ensure accurate range generation.",
+      "Integration testing against local Docker containers running Apache, SSH, and MySQL to verify port resolution and banner grabbing correctness.",
+      "Load testing against local interfaces to measure resource limits and socket timeouts."
+    ],
+    "performanceOptimizations": [
+      "Asynchronous Semaphore: Wrapped socket connections inside an asyncio.Semaphore(500) block to prevent hitting OS file descriptor limits while maximizing scanning throughput.",
+      "Dynamic Timeouts: Configured configurable connection timeout parameters (defaulting to 1.5s) to avoid scanning stalls on unresponsive hosts."
+    ],
+    "lessonsLearned": [
+      "Scanning a target system too rapidly can trigger built-in connection rate limits or firewalls, resulting in inaccurate connection logs. Dynamic spacing and randomized port audits are required for precise audits."
+    ],
+    "futureImprovements": [
+      "Integrate UDP scanning capabilities.",
+      "Integrate automated matching against CVE vulnerability databases.",
+      "Add service version parsing with customizable signature sets."
+    ],
+    "challenges": [
+      {
+        "title": "OS Socket Limits (FD_SETSIZE Limit)",
+        "description": "Spawning thousands of concurrent socket requests triggered 'Too many open files' exceptions on Windows and Linux kernels.",
+        "solution": "Configured an asyncio Semaphore buffer to limit active connection polls to 500 parallel queries, maintaining speed while avoiding OS socket drops."
+      },
+      {
+        "title": "IDS Block Triggers",
+        "description": "High-frequency scans triggered target Intrusion Detection Systems (IDS), resulting in blacklisted IPs.",
+        "solution": "Programmed randomized scanning intervals and shuffled port orders, mimicking normal human connection behavior."
+      }
+    ]
+  }
+]

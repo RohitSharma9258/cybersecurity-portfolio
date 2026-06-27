@@ -1,0 +1,8 @@
+name = "personal-portfolio-web"
+type = "webpack"
+route = ""
+zone_id = ""
+
+[site]
+bucket = "./dist"
+entry-point = "workers-site"
